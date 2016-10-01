@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Listdemo", "Listdemo\Listdemo.csproj", "{EF685FF7-BFD2-4176-81D8-BB8B3393A6DD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SDK", "SDK", "{F288F2BE-C47C-43C7-A9A3-E2B3253D5CD7}"
+	ProjectSection(SolutionItems) = preProject
+		..\Új mappa (2)\achievement_saverestore.cpp = ..\Új mappa (2)\achievement_saverestore.cpp
+		..\Új mappa (2)\ai_saverestore.cpp = ..\Új mappa (2)\ai_saverestore.cpp
+		..\se2007\engine\demofile.cpp = ..\se2007\engine\demofile.cpp
+		C:\Users\Bence\Desktop\host_saverestore.cpp = C:\Users\Bence\Desktop\host_saverestore.cpp
+		..\Új mappa (2)\physics_saverestore.cpp = ..\Új mappa (2)\physics_saverestore.cpp
+		..\Új mappa (2)\saverestore.cpp = ..\Új mappa (2)\saverestore.cpp
+		..\Új mappa (2)\saverestore_filesystem.cpp = ..\Új mappa (2)\saverestore_filesystem.cpp
+		..\Új mappa (2)\saverestore_gamedll.cpp = ..\Új mappa (2)\saverestore_gamedll.cpp
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EF685FF7-BFD2-4176-81D8-BB8B3393A6DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF685FF7-BFD2-4176-81D8-BB8B3393A6DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF685FF7-BFD2-4176-81D8-BB8B3393A6DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF685FF7-BFD2-4176-81D8-BB8B3393A6DD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
