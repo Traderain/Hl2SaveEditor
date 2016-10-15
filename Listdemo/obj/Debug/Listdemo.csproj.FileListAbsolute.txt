@@ -10,3 +10,5 @@ D:\Speedrun\Listsave\Listdemo\obj\Debug\Listdemo.pdb
 D:\Speedrun\Listsave\Listdemo\bin\Debug\Listdemo.exe
 D:\Speedrun\Listsave\Listdemo\bin\Debug\Listdemo.pdb
 D:\Speedrun\Listsave\Listdemo\obj\Debug\Listdemo.csprojResolveAssemblyReference.cache
+F:\Githubrepos\Hl2SaveEditor\Listdemo\bin\Debug\Listdemo.exe.config
+F:\Githubrepos\Hl2SaveEditor\Listdemo\obj\Debug\Listdemo.pdb

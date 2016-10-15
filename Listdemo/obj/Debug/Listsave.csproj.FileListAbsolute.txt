@@ -1,0 +1,6 @@
+F:\Githubrepos\Hl2SaveEditor\Listdemo\bin\Debug\Listdemo.exe.config
+F:\Githubrepos\Hl2SaveEditor\Listdemo\bin\Debug\Listdemo.exe
+F:\Githubrepos\Hl2SaveEditor\Listdemo\bin\Debug\Listdemo.pdb
+F:\Githubrepos\Hl2SaveEditor\Listdemo\obj\Debug\Listsave.csprojResolveAssemblyReference.cache
+F:\Githubrepos\Hl2SaveEditor\Listdemo\obj\Debug\Listdemo.exe
+F:\Githubrepos\Hl2SaveEditor\Listdemo\obj\Debug\Listdemo.pdb

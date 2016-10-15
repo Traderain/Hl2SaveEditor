@@ -1,15 +1,27 @@
-﻿using System;
+﻿/* https://github.com/LestaD/SourceEngine2007/blob/43a5c90a5ada1e69ca044595383be67f40b33c61/src_main/public/saverestoretypes.h#L323
+ * https://github.com/LestaD/SourceEngine2007/blob/43a5c90a5ada1e69ca044595383be67f40b33c61/src_main/engine/host_saverestore.cpp
+ * https://github.com/LestaD/SourceEngine2007/blob/43a5c90a5ada1e69ca044595383be67f40b33c61/src_main/gameui/BaseSaveGameDialog.cpp
+ * https://github.com/LestaD/SourceEngine2007/blob/43a5c90a5ada1e69ca044595383be67f40b33c61/src_main/tier1/lzss.cpp
+ * TODO: Implement these
+ * 
+ * Decompress the file with CLZSS -> Read header -> Parse files.
+ * 
+ * 
+ */
+
+
+
+
+using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using static System.Text.Encoding;
-using static System.Math;
-using static System.BitConverter;
-using static System.Globalization.CultureInfo;
+using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ListSave
+
+namespace Listsave
 {
     public class Flag
     {
@@ -20,144 +32,79 @@ namespace ListSave
         public Flag(int t, float s, string type)
         {
             Ticks = t.ToString();
-            Time = s.ToString(InvariantCulture) + "s";
+            Time = s.ToString(CultureInfo.InvariantCulture) + "s";
             Type = type;
         }
     }
 
     public class Listsave
     {
+
+        public int SAVEGAME_MAPNAME_LEN = 32;
+        public int SAVEGAME_COMMENT_LEN = 80;
+        public int SAVEGAME_ELAPSED_LEN = 32;
+        public int SECTION_MAGIC_NUMBER = 0x54541234;
+        public int SECTION_VERSION_NUMBER = 2;
+
+        unsafe struct GAME_HEADER
+        {
+
+            fixed char mapName[32];
+            fixed char comment[80];
+            int mapCount;       // the number of map state files in the save file.  This is usually number of maps * 3 (.hl1, .hl2, .hl3 files)
+            fixed char originMapName[32];
+            fixed char landmark[256];
+        };
+
+        unsafe struct SAVE_HEADER
+        {
+            int saveId;
+            int version;
+            int skillLevel;
+            int connectionCount;
+            int lightStyleCount;
+            int mapVersion;
+            float time;
+            fixed char mapName[32];
+            fixed char skyName[32];
+        };
+
         public static string Chaptername(int chapter)
         {
-            string name = "Point Insertion";
             #region MapSwitch
             switch (chapter)
             {
-                case 1:
-                    {
-                        name = "A Red Letter Day";
-                        break;
-                    }
-                case 2:
-                    {
-                        name = "Route Kanal";
-                        break;
-                    }
-                case 3:
-                    {
-                        name = "Water Hazard";
-                        break;
-                    }
-                case 4:
-                    {
-                        name = "Black Mesa East";
-                        break;
-                    }
-                case 5:
-                    {
-                        name = "We don't go to Ravenholm";
-                        break;
-                    }
-                case 6:
-                    {
-                        name = "Highway 17";
-                        break;
-                    }
-                case 7:
-                    {
-                        name = "Sandtraps";
-                        break;
-                    }
-                case 8:
-                    {
-                        name = "Nova Prospekt";
-                        break;
-                    }
-                case 9:
-                    {
-                        name = "Entanglement";
-                        break;
-                    }
-                case 10:
-                    {
-                        name = "Anticitizen One";
-                        break;
-                    }
-                case 11:
-                    {
-                        name = "Follow Freeman!";
-                        break;
-                    }
-                case 12:
-                    {
-                        name = "Our Benefactors";
-                        break;
-                    }
-                case 13:
-                    {
-                        name = "Dark Energy";
-                        break;
-                    }
-                default:
-                    {
-                        name = "Mod/Unknown";
-                        break;
-                    }
+                case 0: return "Point Insertion";
+                case 1: return "A Red Letter Day";
+                case 2: return "Route Kanal";
+                case 3: return "Water Hazard";
+                case 4: return "Black Mesa East";
+                case 5: return "We don't go to Ravenholm";
+                case 6: return "Highway 17";
+                case 7: return "Sandtraps";
+                case 8: return "Nova Prospekt";
+                case 9: return "Entanglement";
+                case 10: return "Anticitizen One";
+                case 11: return "Follow Freeman!";
+                case 12: return "Our Benefactors";
+                case 13: return "Dark Energy";
+                default: return "Mod/Unknown";
             }
             #endregion
-            return name;
         }
         public static SaveFile ParseFile(string file)
         {
-            string[] cheats =
-            {
-                "host_timescale", "god", "sv_cheats", "buddha", "host_framerate", "sv_accelerate",
-                "sv_airaccelerate", "noclip", "ent_fire"
-            };
             var result = new SaveFile();
             using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
             using (var br = new BinaryReader(fs))
             {
-                var magicnumber = 0x54541234;
-                var versionNumber = 2;
-                result.Tokentable = new List<Token>();
-                var identifier = ASCII.GetString(br.ReadBytes(4)).TrimEnd('\0');
-                if (identifier != "JSAV")
-                    throw new Exception("Not a demo");
-                result.FileName = file;
-                result.Header = identifier;
-                result.SaveVersion = (ToInt32(br.ReadBytes(4), 0));
-                result.Size = (ToInt32(br.ReadBytes(4), 0));
-                result.TokenCount = (ToInt32(br.ReadBytes(4), 0));
-                result.Tokensize = (ToInt32(br.ReadBytes(4), 0));
-                int bytesread = 0;
-                
-                string token_uns = ASCII.GetString(br.ReadBytes(result.Tokensize)).TrimEnd('\0');
-                RegexOptions options = RegexOptions.None;
-                Regex regex = new Regex("[\0]{2,}", options);
-                var tempo = regex.Replace(token_uns, " ");
-                List<Token> tempTokens = tempo.Split(' ').ToList().Where(x => x.Length > 0).Select(x => new Token(x, x)).ToList();
-                result.Tokentable = tempTokens;
-                Token commenToken = new Token("","");
-                commenToken.Name = "Comment";
-                br.ReadBytes(20);//Skip the /0's//Skip the actual comment its always empty so it has no point gg volvo
-                /*
-            ___________
-    ---    //   |||   \\         
- -      __//____|||____\\____   
-  ---  | _|      | VOLVO _  ||
- ---   |/ \______|______/ \_|| 
- -     _\_/_____________\_/____
-                */
-                var map = ASCII.GetString(br.ReadBytes(31)).TrimEnd('\0');//34 = P-letter
-                var p = ASCII.GetString(br.ReadBytes(4)).Replace("0","");
-                var hesteg = ASCII.GetString(br.ReadBytes(1)).TrimEnd('\0');
-                var chapter = ASCII.GetString(br.ReadBytes(63)).Trim('\0');
-                commenToken.Value = " ";
-                result.Map = map;
-                result.Chapter = Chaptername(int.Parse(Regex.Match(chapter.Split('_')[1], @"\d+").Value));
+                result.Header = (Encoding.ASCII.GetString(br.ReadBytes(sizeof(int))));
+                result.SaveVersion = br.ReadInt32();
+                result.Size = br.ReadInt32();
+                result.TokenCount = br.ReadInt32();
+                result.Tokensize = br.ReadInt32();
 
-                return result;
+                return new SaveFile(); //TODO: return
             }
         }
     }
@@ -189,3 +136,140 @@ namespace ListSave
         }
     }
 }
+/*
+ * int CSaveRestore::SaveReadHeader( FileHandle_t pFile, GAME_HEADER *pHeader, int readGlobalState )
+{
+	int					i, tag, size, tokenCount, tokenSize;
+	char				*pszTokenList;
+	CSaveRestoreData	*pSaveData = NULL;
+
+	if( g_pSaveRestoreFileSystem->Read( &tag, sizeof(int), pFile ) != sizeof(int) )
+		return 0;
+
+	if ( tag != MAKEID('J','S','A','V') )
+	{
+		Warning( "Can't load saved game, incorrect FILEID\n" );
+		return 0;
+	}
+		
+	if ( g_pSaveRestoreFileSystem->Read( &tag, sizeof(int), pFile ) != sizeof(int) )
+		return 0;
+
+	if ( tag != SAVEGAME_VERSION )				// Enforce version for now
+	{
+		Warning( "Can't load saved game, incorrect version (got %i expecting %i)\n", tag, SAVEGAME_VERSION );
+		return 0;
+	}
+
+	if ( g_pSaveRestoreFileSystem->Read( &size, sizeof(int), pFile ) != sizeof(int) )
+		return 0;
+
+	if ( g_pSaveRestoreFileSystem->Read( &tokenCount, sizeof(int), pFile ) != sizeof(int) )
+		return 0;
+
+	if ( g_pSaveRestoreFileSystem->Read( &tokenSize, sizeof(int), pFile ) != sizeof(int) ) 
+		return 0;
+
+	// At this point we must clean this data up if we fail!
+	void *pSaveMemory = SaveAllocMemory( sizeof(CSaveRestoreData) + tokenSize + size, sizeof(char) );
+	if ( !pSaveMemory )
+	{
+		return 0;
+	}
+
+	pSaveData = MakeSaveRestoreData( pSaveMemory );
+
+	pSaveData->levelInfo.connectionCount = 0;
+
+	pszTokenList = (char *)(pSaveData + 1);
+
+	if ( tokenSize > 0 )
+	{
+		if ( g_pSaveRestoreFileSystem->Read( pszTokenList, tokenSize, pFile ) != tokenSize )
+		{
+			Finish( pSaveData );
+			return 0;
+		}
+
+		pSaveMemory = SaveAllocMemory( tokenCount, sizeof(char *), true );
+		if ( !pSaveMemory )
+		{
+			Finish( pSaveData );
+			return 0;
+		}
+
+		pSaveData->InitSymbolTable( (char**)pSaveMemory, tokenCount );
+
+		// Make sure the token strings pointed to by the pToken hashtable.
+		for( i=0; i<tokenCount; i++ )
+		{
+			if ( *pszTokenList )
+			{
+				Verify( pSaveData->DefineSymbol( pszTokenList, i ) );
+			}
+			while( *pszTokenList++ );				// Find next token (after next null)
+		}
+	}
+	else
+	{
+		pSaveData->InitSymbolTable( NULL, 0 );
+	}
+
+
+	pSaveData->levelInfo.fUseLandmark = false;
+	pSaveData->levelInfo.time = 0;
+
+	// pszTokenList now points after token data
+	pSaveData->Init( pszTokenList, size ); 
+	if ( g_pSaveRestoreFileSystem->Read( pSaveData->GetBuffer(), size, pFile ) != size )
+	{
+		Finish( pSaveData );
+		return 0;
+	}
+	
+
+    //return m_pServerGameDLL->SaveReadFields( s, c, v, d, t, i );
+	serverGameDLL->SaveReadFields( pSaveData, "GameHeader", pHeader, NULL, GAME_HEADER::m_DataMap.dataDesc, GAME_HEADER::m_DataMap.dataNumFields );
+	
+    
+    if ( g_szMapLoadOverride[0] )
+	{
+		V_strncpy( pHeader->mapName, g_szMapLoadOverride, sizeof( pHeader->mapName ) );
+		g_szMapLoadOverride[0] = 0;
+	}
+
+	if ( readGlobalState )
+	{
+		serverGameDLL->RestoreGlobalState( pSaveData );
+	}
+
+	Finish( pSaveData );
+    /*
+     * void CSaveRestore::Finish( CSaveRestoreData *save )
+        {
+        	char **pTokens = save->DetachSymbolTable();
+        	if ( pTokens )
+        		SaveFreeMemory( pTokens );
+        
+        	entitytable_t *pEntityTable = save->DetachEntityTable();
+        	if ( pEntityTable )
+        		SaveFreeMemory( pEntityTable );
+        
+        	save->PurgeEntityHash();
+        	SaveFreeMemory( save );
+        
+        
+        	g_ServerGlobalVariables.pSaveData = NULL;
+        }
+      /*
+      
+
+	if ( pHeader->mapCount == 0 )
+	{
+		if ( g_pSaveRestoreFileSystem->Read( &pHeader->mapCount, sizeof(pHeader->mapCount), pFile ) != sizeof(pHeader->mapCount) )
+			return 0;
+	}
+
+	return 1;
+}
+ */
